@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b0d11"><title>EL FARES | موبايلات وإكسسوارات وصيانة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="#"><img src="assets/el-fares-logo.jpg" alt="EL FARES"><span>EL <b>FARES</b><small>موبايلات • إكسسوارات • صيانة</small></span></a>
+<nav><a href="#phones">الموبايلات</a><a href="#used">المستعمل</a><a href="#accessories">الإكسسوارات</a><a href="#repair">الصيانة</a></nav>
+<div class="head-actions"><button class="outline" id="cartOpen">السلة <span id="cartCount">0</span></button><a class="admin-link" href="admin.html">لوحة الإدارة</a></div></header>
+<main>
+<section class="hero"><div class="hero-circuit"></div><div class="hero-copy"><span class="eyebrow">TECHNOLOGY • STYLE • TRUST</span><h1>كل اللي موبايلك<br><em>محتاجه</em> في مكان واحد</h1><p>أجهزة جديدة ومستعملة، إكسسوارات أصلية، وخدمات صيانة باحترافية في مدينة العبور.</p><div class="hero-actions"><a class="primary" href="#shop">تسوق الآن <span>←</span></a><a class="secondary" href="#repair">خدمات الصيانة</a></div><div class="trust"><span>✦ ضمان واهتمام</span><span>✦ أسعار منافسة</span><span>✦ توصيل داخل العبور</span></div></div>
+<div class="hero-mark"><div class="glow-ring">EF</div><div class="hero-caption">EL FARES <small>YOUR MOBILE PARTNER</small></div></div></section>
+<section class="strip"><div><b>01</b><span>أجهزة جديدة</span></div><div><b>02</b><span>أجهزة مستعملة</span></div><div><b>03</b><span>إكسسوارات</span></div><div><b>04</b><span>صيانة وإصلاح</span></div></section>
+<section class="section" id="shop"><div class="section-title"><div><span class="eyebrow">OUR COLLECTION</span><h2>اكتشف منتجاتنا</h2></div><p>اختار القسم اللي بتدور عليه</p></div><div class="categories">
+<a class="category" href="#phones"><i>▣</i><b>موبايلات جديدة</b><small>أحدث الأجهزة</small></a><a class="category" href="#used"><i>↻</i><b>موبايلات مستعملة</b><small>حالة ممتازة وأسعار مناسبة</small></a><a class="category" href="#accessories"><i>◈</i><b>إكسسوارات</b><small>كل مستلزمات موبايلك</small></a><a class="category" href="#repair"><i>⚒</i><b>الصيانة</b><small>فحص وإصلاح باحتراف</small></a></div></section>
+<section class="section products-section" id="phones"><div class="section-title"><div><span class="eyebrow">NEW ARRIVALS</span><h2>أجهزة موبايل</h2></div><button class="text-btn" onclick="filterProducts('phone')">عرض الكل ←</button></div><div class="products" id="phoneProducts"></div></section>
+<section class="section products-section" id="used"><div class="section-title"><div><span class="eyebrow">PRE-OWNED PICKS</span><h2>أجهزة مستعملة</h2></div><span class="muted">أجهزة مختارة بعناية</span></div><div class="products" id="usedProducts"></div></section>
+<section class="section products-section" id="accessories"><div class="section-title"><div><span class="eyebrow">MUST HAVE</span><h2>إكسسوارات</h2></div><span class="muted">تفاصيل تكمل تجربتك</span></div><div class="products" id="accessoryProducts"></div></section>
+<section class="repair" id="repair"><div><span class="eyebrow">EXPERT CARE</span><h2>موبايلك محتاج صيانة؟</h2><p>خدمات فحص وصيانة للأعطال المختلفة، مع توضيح المشكلة والتكلفة قبل التنفيذ.</p><a class="primary" href="https://wa.me/201092915111?text=%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D8%B9%D9%84%D8%A7%D9%85%20%D8%B9%D9%86%20%D8%AE%D8%AF%D9%85%D8%A7%D8%AA%20%D8%A7%D9%84%D8%B5%D9%8A%D8%A7%D9%86%D8%A9">احجز استفسارك على واتساب</a></div><div class="repair-icon">⌁<span>REPAIR<br>LAB</span></div></section>
+<section class="section delivery"><div class="delivery-icon">⌖</div><div><h2>التوصيل داخل مدينة العبور فقط</h2><p>اطلب بسهولة، وفريقنا هيتواصل معاك لتأكيد تفاصيل الأوردر.</p></div></section>
+</main>
+<footer><div class="foot-brand">EL <b>FARES</b><small>Mobile Accessories & Repair</small></div><div>مدينة العبور – القاهرة</div><a href="https://wa.me/201092915111">واتساب: 01092915111</a><small>© EL FARES — جميع الحقوق محفوظة</small></footer>
+<div class="drawer-backdrop" id="backdrop"></div><aside class="cart-drawer" id="cartDrawer"><div class="drawer-head"><h3>سلة المشتريات</h3><button id="cartClose">✕</button></div><div id="cartItems" class="cart-items"></div><div class="cart-total"><span>الإجمالي</span><b id="cartTotal">0 ج.م</b></div><form id="checkoutForm"><h3>بيانات الطلب</h3><input required name="name" placeholder="الاسم بالكامل"><input required name="phone" inputmode="tel" placeholder="رقم الموبايل"><input required name="address" placeholder="العنوان داخل مدينة العبور"><textarea name="notes" placeholder="ملاحظات إضافية (اختياري)"></textarea><button class="primary full" type="submit">إرسال الطلب على واتساب</button><small>التوصيل متاح داخل مدينة العبور فقط.</small></form></aside>
+<script src="store.js"></script></body></html>
