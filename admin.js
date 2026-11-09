@@ -59,5 +59,19 @@ $('productForm').addEventListener('submit',async e=>{
 function resetForm(){const form=$('productForm');form.reset();form.elements.art.value='📱';form.elements.active.checked=true;form.elements.imageFiles.value='';editingId=null;editingImageUrls=[];showImagePreview([]);$('formTitle').textContent='إضافة منتج جديد';$('cancelEdit').classList.add('hidden');}
 $('cancelEdit').onclick=resetForm;$('refreshProducts').onclick=loadProducts;
 $('exportProducts').onclick=()=>{const rows=[['name','type','price','tag','description','active','image_urls'],...productCache.map(p=>[p.name,p.type,p.price,p.tag,p.description,p.active,productImages(p).join(' | ')])];const csv='\uFEFF'+rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='el-fares-products.csv';a.click();URL.revokeObjectURL(a.href);};
-async function loadOrders(){const {data,error}=await db.from('orders').select('*').order('created_at',{ascending:false}).limit(100);if(error){$('ordersBody').innerHTML=`<tr><td colspan="6">تعذر تحميل الطلبات: ${esc(error.message)}</td></tr>`;return;}$('ordersBody').innerHTML=(data||[]).map(o=>`<tr><td>${new Date(o.created_at).toLocaleString('ar-EG')}</td><td>${esc(o.customer_name)}</td><td>${esc(o.phone)}</td><td>${esc(o.address)}</td><td>${money(o.total)}</td><td>${esc(o.status||'جديد')}</td></tr>`).join('')||'<tr><td colspan="6">لا توجد طلبات حتى الآن.</td></tr>';}
+function orderItemsHtml(items){
+ let list=items;
+ if(typeof list==='string'){try{list=JSON.parse(list);}catch(_){list=[];}}
+ if(!Array.isArray(list)||!list.length)return '<span class="muted">لا توجد تفاصيل محفوظة لهذا الطلب</span>';
+ const labels={phone:'موبايل جديد',used:'موبايل مستعمل',accessory:'إكسسوار'};
+ return '<ul class="order-items">'+list.map(item=>{
+  const type=labels[item.type]||item.type||'غير محدد';
+  return `<li><strong>${esc(item.name||'منتج')}</strong> — ${esc(type)} — الكمية: ${Number(item.quantity||1)} — السعر: ${money(item.price)}</li>`;
+ }).join('')+'</ul>';
+}
+async function loadOrders(){
+ const {data,error}=await db.from('orders').select('*').order('created_at',{ascending:false}).limit(100);
+ if(error){$('ordersBody').innerHTML=`<tr><td colspan="7">تعذر تحميل الطلبات: ${esc(error.message)}</td></tr>`;return;}
+ $('ordersBody').innerHTML=(data||[]).map(o=>`<tr><td>${new Date(o.created_at).toLocaleString('ar-EG')}</td><td>${esc(o.customer_name)}</td><td>${esc(o.phone)}</td><td>${esc(o.address)}</td><td>${orderItemsHtml(o.items)}</td><td>${money(o.total)}</td><td>${esc(o.status||'جديد')}</td></tr>`).join('')||'<tr><td colspan="7">لا توجد طلبات حتى الآن.</td></tr>';
+}
 $('refreshOrders').onclick=loadOrders;
