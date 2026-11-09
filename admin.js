@@ -59,19 +59,26 @@ $('productForm').addEventListener('submit',async e=>{
 function resetForm(){const form=$('productForm');form.reset();form.elements.art.value='📱';form.elements.active.checked=true;form.elements.imageFiles.value='';editingId=null;editingImageUrls=[];showImagePreview([]);$('formTitle').textContent='إضافة منتج جديد';$('cancelEdit').classList.add('hidden');}
 $('cancelEdit').onclick=resetForm;$('refreshProducts').onclick=loadProducts;
 $('exportProducts').onclick=()=>{const rows=[['name','type','price','tag','description','active','image_urls'],...productCache.map(p=>[p.name,p.type,p.price,p.tag,p.description,p.active,productImages(p).join(' | ')])];const csv='\uFEFF'+rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='el-fares-products.csv';a.click();URL.revokeObjectURL(a.href);};
-function orderItemsHtml(items){
- let list=items;
- if(typeof list==='string'){try{list=JSON.parse(list);}catch(_){list=[];}}
- if(!Array.isArray(list)||!list.length)return '<span class="muted">لا توجد تفاصيل محفوظة لهذا الطلب</span>';
- const labels={phone:'موبايل جديد',used:'موبايل مستعمل',accessory:'إكسسوار'};
- return '<ul class="order-items">'+list.map(item=>{
-  const type=labels[item.type]||item.type||'غير محدد';
-  return `<li><strong>${esc(item.name||'منتج')}</strong> — ${esc(type)} — الكمية: ${Number(item.quantity||1)} — السعر: ${money(item.price)}</li>`;
- }).join('')+'</ul>';
+function parseOrderDetails(raw){
+ if(typeof raw==='string'){try{raw=JSON.parse(raw);}catch(_){return {products:[]};}}
+ if(Array.isArray(raw))return {products:raw,subtotal:raw.reduce((s,x)=>s+Number(x.price||0)*Number(x.quantity||1),0),shipping_fee:0};
+ return raw&&typeof raw==='object'?raw:{products:[]};
 }
+function orderProductsHtml(raw){
+ const d=parseOrderDetails(raw),items=Array.isArray(d.products)?d.products:[];
+ if(!items.length)return '<span class="muted">تفاصيل المنتج غير متاحة لهذا الطلب القديم</span>';
+ const labels={phone:'موبايل جديد',used:'موبايل مستعمل',accessory:'إكسسوار'};
+ return '<ul class="order-items">'+items.map(x=>`<li><strong>${esc(x.name||'منتج')}</strong> — ${esc(labels[x.type]||x.type||'غير محدد')} × ${Number(x.quantity||1)}</li>`).join('')+'</ul>';
+}
+function orderProductPrice(raw){
+ const d=parseOrderDetails(raw),items=Array.isArray(d.products)?d.products:(Array.isArray(raw)?raw:[]);
+ const subtotal=d.subtotal??items.reduce((s,x)=>s+Number(x.price||0)*Number(x.quantity||1),0);
+ return money(subtotal);
+}
+function orderShipping(raw){const d=parseOrderDetails(raw);return money(d.shipping_fee||0);}
 async function loadOrders(){
  const {data,error}=await db.from('orders').select('*').order('created_at',{ascending:false}).limit(100);
- if(error){$('ordersBody').innerHTML=`<tr><td colspan="7">تعذر تحميل الطلبات: ${esc(error.message)}</td></tr>`;return;}
- $('ordersBody').innerHTML=(data||[]).map(o=>`<tr><td>${new Date(o.created_at).toLocaleString('ar-EG')}</td><td>${esc(o.customer_name)}</td><td>${esc(o.phone)}</td><td>${esc(o.address)}</td><td>${orderItemsHtml(o.items)}</td><td>${money(o.total)}</td><td>${esc(o.status||'جديد')}</td></tr>`).join('')||'<tr><td colspan="7">لا توجد طلبات حتى الآن.</td></tr>';
+ if(error){$('ordersBody').innerHTML=`<tr><td colspan="9">تعذر تحميل الطلبات: ${esc(error.message)}</td></tr>`;return;}
+ $('ordersBody').innerHTML=(data||[]).map(o=>`<tr><td>${new Date(o.created_at).toLocaleString('ar-EG')}</td><td>${esc(o.customer_name)}</td><td>${esc(o.phone)}</td><td>${esc(o.address)}</td><td>${orderProductsHtml(o.items)}</td><td class="order-money">${orderProductPrice(o.items)}</td><td class="order-money">${orderShipping(o.items)}</td><td class="order-money">${money(o.total)}</td><td class="order-notes">${esc(o.notes||'—')}</td></tr>`).join('')||'<tr><td colspan="9">لا توجد طلبات حتى الآن.</td></tr>';
 }
 $('refreshOrders').onclick=loadOrders;
