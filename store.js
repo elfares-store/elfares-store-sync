@@ -63,6 +63,16 @@ if(checkout)checkout.addEventListener('submit',async e=>{
  if(btn){btn.disabled=false;btn.textContent='إرسال الطلب على واتساب';}
 });
 function filterProducts(type){document.getElementById(type==='phone'?'phones':type==='used'?'used':'accessories').scrollIntoView({behavior:'smooth'});}
+function startCheckout(){
+ const form=document.getElementById('checkoutForm');
+ const button=document.getElementById('checkoutStart');
+ if(!cart.length){alert('السلة فارغة. أضف منتجات أولاً.');return;}
+ if(!form){alert('تعذر فتح نموذج الطلب. حدّث الصفحة وحاول مرة أخرى.');return;}
+ form.hidden=false;
+ if(button)button.hidden=true;
+ updateDeliverySummary();
+}
+window.startCheckout=startCheckout;
 const checkoutStart=document.getElementById('checkoutStart');
-if(checkoutStart)checkoutStart.addEventListener('click',()=>{if(!cart.length){alert('السلة فارغة. أضف منتجات أولاً.');return;}document.getElementById('checkoutForm').hidden=false;checkoutStart.hidden=true;updateDeliverySummary();});
+if(checkoutStart)checkoutStart.addEventListener('click',startCheckout);
 renderCart();loadProducts();
