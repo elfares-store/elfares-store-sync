@@ -34,7 +34,9 @@ async function loadProducts(){
  if(db){const {data,error}=await db.from('products').select('*').eq('active',true).order('created_at',{ascending:false});if(!error&&data)products=data;else console.warn('Supabase products:',error);}
  render();
 }
-function addToCart(id){let p=products.find(x=>String(x.id)===String(id)),line=cart.find(x=>String(x.id)===String(id));if(!p)return;line?line.qty++:cart.push({...p,qty:1});renderCart();openCart();}
+function addToCart(id){let p=products.find(x=>String(x.id)===String(id)),line=cart.find(x=>String(x.id)===String(id));if(!p)return;line?line.qty++:cart.push({...p,qty:1});renderCart();}
+const checkoutStart=document.getElementById('checkoutStart');
+if(checkoutStart)checkoutStart.addEventListener('click',()=>{if(!cart.length){alert('السلة فارغة. أضف إكسسواراً أولاً.');return;}const form=document.getElementById('checkoutForm');if(form){form.hidden=false;checkoutStart.hidden=true;form.scrollIntoView({behavior:'smooth',block:'start'});}});
 function renderCart(){const count=document.getElementById('cartCount'),items=document.getElementById('cartItems'),total=document.getElementById('cartTotal');if(!count)return;count.textContent=cart.reduce((s,x)=>s+x.qty,0);items.innerHTML=cart.length?cart.map(x=>`<div class="cart-line"><span>${escapeHtml(x.name)} × ${x.qty}</span><b>${money(x.price*x.qty)}</b><button onclick="removeItem('${String(x.id).replace(/'/g,"\\'")}')">حذف</button></div>`).join(''):'<p class="muted">السلة فارغة حالياً.</p>';total.textContent=money(cart.reduce((s,x)=>s+x.price*x.qty,0));}
 function removeItem(id){cart=cart.filter(x=>String(x.id)!==String(id));renderCart();}
 function openCart(){document.getElementById('cartDrawer').classList.add('open');document.getElementById('backdrop').classList.add('show');}

@@ -29,3 +29,6 @@
 .payment-option{display:flex;align-items:center;gap:9px;padding:8px 10px;margin:5px 0;background:#111820;border:1px solid #364149;border-radius:5px;color:#eee}
 .payment-option input{width:auto;margin:0;accent-color:#35cbd7}
 #deliverySummary{display:block;padding:8px 0;color:#55dce5}
+
+/* Checkout form stays hidden until the customer starts the order from the cart */
+#checkoutForm[hidden], #checkoutStart[hidden] { display: none !important; }
