@@ -61,21 +61,28 @@ $('cancelEdit').onclick=resetForm;$('refreshProducts').onclick=loadProducts;
 $('exportProducts').onclick=()=>{const rows=[['name','type','price','tag','description','active','image_urls'],...productCache.map(p=>[p.name,p.type,p.price,p.tag,p.description,p.active,productImages(p).join(' | ')])];const csv='\uFEFF'+rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='el-fares-products.csv';a.click();URL.revokeObjectURL(a.href);};
 function parseOrderDetails(raw){
  if(typeof raw==='string'){try{raw=JSON.parse(raw);}catch(_){return {products:[]};}}
- if(Array.isArray(raw))return {products:raw,subtotal:raw.reduce((s,x)=>s+Number(x.price||0)*Number(x.quantity||1),0),shipping_fee:0};
- return raw&&typeof raw==='object'?raw:{products:[]};
+ if(Array.isArray(raw))return {products:raw,subtotal:raw.reduce((s,x)=>s+Number(x.price||0)*Number(x.quantity||x.qty||1),0),shipping_fee:0};
+ if(raw&&typeof raw==='object'){
+  const products=Array.isArray(raw.products)?raw.products:(Array.isArray(raw.items)?raw.items:[]);
+  return {...raw,products};
+ }
+ return {products:[]};
 }
 function orderProductsHtml(raw){
- const d=parseOrderDetails(raw),items=Array.isArray(d.products)?d.products:[];
- if(!items.length)return '<span class="muted">تفاصيل المنتج غير متاحة لهذا الطلب القديم</span>';
+ const d=parseOrderDetails(raw),items=d.products;
+ if(!items.length)return '<span class="muted">لا توجد تفاصيل منتجات محفوظة لهذا الطلب</span>';
  const labels={phone:'موبايل جديد',used:'موبايل مستعمل',accessory:'إكسسوار'};
- return '<ul class="order-items">'+items.map(x=>`<li><strong>${esc(x.name||'منتج')}</strong> — ${esc(labels[x.type]||x.type||'غير محدد')} × ${Number(x.quantity||1)}</li>`).join('')+'</ul>';
+ return '<ul class="order-items">'+items.map(x=>`<li><strong>${esc(x.name||'منتج')}</strong> — ${esc(labels[x.type]||x.type||'غير محدد')} × ${Number(x.quantity||x.qty||1)}</li>`).join('')+'</ul>';
 }
 function orderProductPrice(raw){
- const d=parseOrderDetails(raw),items=Array.isArray(d.products)?d.products:(Array.isArray(raw)?raw:[]);
- const subtotal=d.subtotal??items.reduce((s,x)=>s+Number(x.price||0)*Number(x.quantity||1),0);
+ const d=parseOrderDetails(raw),items=d.products;
+ const subtotal=d.subtotal??items.reduce((s,x)=>s+Number(x.line_total??(Number(x.price||0)*Number(x.quantity||x.qty||1))),0);
  return money(subtotal);
 }
-function orderShipping(raw){const d=parseOrderDetails(raw);return money(d.shipping_fee||0);}
+function orderShipping(raw){
+ const d=parseOrderDetails(raw);
+ return money(d.shipping_fee??d.delivery_fee??0);
+}
 async function loadOrders(){
  const {data,error}=await db.from('orders').select('*').order('created_at',{ascending:false}).limit(100);
  if(error){$('ordersBody').innerHTML=`<tr><td colspan="9">تعذر تحميل الطلبات: ${esc(error.message)}</td></tr>`;return;}
