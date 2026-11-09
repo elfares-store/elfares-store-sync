@@ -9,6 +9,15 @@ body{margin:0;background:#0b0e13;color:white;font-family:Arial;text-align:center
 h1{color:#d7b76a;margin:30px}
 p{color:#aaa}
 a{display:block;max-width:400px;margin:18px auto;padding:18px;background:#171f27;border:1px solid #d7b76a;border-radius:12px;color:white;text-decoration:none;font-size:19px}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: url("el-fares-logo.jpg") center center / 260px auto no-repeat;
+  opacity: 0.10;
+  pointer-events: none;
+  z-index: 0;
+}
 a:hover{background:#176c70}
 </style>
 </head>
