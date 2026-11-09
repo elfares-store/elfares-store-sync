@@ -23,3 +23,9 @@
 .product-thumbs{display:flex;gap:6px;padding:8px 12px 0;overflow-x:auto}
 .product-thumbs img{width:42px;height:42px;object-fit:cover;border-radius:6px;border:1px solid #344149}
 .image-upload-label input[type=file]::file-selector-button{background:#17666b;color:#fff;border:0;border-radius:6px;padding:8px 12px;margin-inline-end:8px}
+
+/* Checkout delivery and payment controls */
+.payment-label{display:block;margin-top:14px;color:#d9b66c;font-weight:800}
+.payment-option{display:flex;align-items:center;gap:9px;padding:8px 10px;margin:5px 0;background:#111820;border:1px solid #364149;border-radius:5px;color:#eee}
+.payment-option input{width:auto;margin:0;accent-color:#35cbd7}
+#deliverySummary{display:block;padding:8px 0;color:#55dce5}
