@@ -12,7 +12,7 @@ let products = [...DEMO_PRODUCTS], cart = [];
 const money = n => Number(n || 0).toLocaleString('en-US') + ' ج.م';
 const configured = () => window.supabase && window.EL_FARES_SUPABASE_URL && window.EL_FARES_SUPABASE_ANON_KEY && !window.EL_FARES_SUPABASE_URL.includes('ضع_');
 const db = configured() ? window.supabase.createClient(window.EL_FARES_SUPABASE_URL, window.EL_FARES_SUPABASE_ANON_KEY) : null;
-const SHOP_LOCATION={lat:30.273134,lng:31.510820};
+const SHOP_LOCATION={lat:30.267337,lng:31.527470};
 let customerLocation=null, deliveryFee=null, deliveryDistance=null;
 function straightDistanceKm(a,b){const r=n=>n*Math.PI/180,dLat=r(b.lat-a.lat),dLng=r(b.lng-a.lng),q=Math.sin(dLat/2)**2+Math.cos(r(a.lat))*Math.cos(r(b.lat))*Math.sin(dLng/2)**2;return 6371*2*Math.atan2(Math.sqrt(q),Math.sqrt(1-q));}
 function feeForDistance(km){return km<=1?25:km<=3?35:km<=6?60:100;}
