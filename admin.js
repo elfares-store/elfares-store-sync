@@ -5,14 +5,24 @@ const money=n=>Number(n||0).toLocaleString('en-US')+' ج.م';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function message(id,text,error=false){$(id).textContent=text;$(id).style.color=error?'#ff9c9c':'#7de2c0';}
 function productImages(p){if(Array.isArray(p.image_urls))return p.image_urls.filter(Boolean);return p.image_url?[p.image_url]:[];}
-function showImagePreview(urls=[]){const box=$('imagePreview');if(!box)return;box.innerHTML=urls.map((url,i)=>`<div class="preview-item"><img src="${esc(url)}" alt="صورة المنتج ${i+1}"><small>صورة ${i+1}</small></div>`).join('');}
+function showImagePreview(newFiles=[]){
+ const box=$('imagePreview');if(!box)return;
+ const saved=editingImageUrls.map((url,i)=>`<div class="preview-item"><img src="${esc(url)}" alt="صورة محفوظة ${i+1}"><small>صورة محفوظة ${i+1}</small><button type="button" class="remove-image" data-remove-image="${i}">حذف</button></div>`).join('');
+ const added=[...newFiles].map((file,i)=>`<div class="preview-item"><img src="${URL.createObjectURL(file)}" alt="صورة جديدة ${i+1}"><small>صورة جديدة ${i+1}</small></div>`).join('');
+ box.innerHTML=saved+added;
+}
+$('imagePreview')?.addEventListener('click',e=>{
+ const index=e.target.dataset.removeImage;
+ if(index===undefined)return;
+ editingImageUrls.splice(Number(index),1);
+ showImagePreview($('imageFiles').files||[]);
+});
 $('imageFiles')?.addEventListener('change',e=>{
  const files=[...(e.target.files||[])];
  if(files.some(f=>!f.type.startsWith('image/'))){message('productMessage','اختر ملفات صور فقط.',true);e.target.value='';return;}
  if(files.some(f=>f.size>5*1024*1024)){message('productMessage','حجم كل صورة يجب ألا يتجاوز 5 ميجابايت.',true);e.target.value='';return;}
- const urls=files.map(f=>URL.createObjectURL(f));
- showImagePreview(urls);
- if(files.length)message('productMessage',`تم اختيار ${files.length} صورة. سيتم رفعها عند حفظ المنتج.`);
+ showImagePreview(files);
+ if(files.length)message('productMessage',`تم اختيار ${files.length} صورة إضافية. سيتم ضمها إلى الصور الحالية عند الحفظ.`);
 });
 async function uploadProductImages(files){
  const {data:{user},error:userError}=await db.auth.getUser();
@@ -39,14 +49,14 @@ $('loginForm').addEventListener('submit',async e=>{e.preventDefault();if(!db)ret
 function showDashboard(){$('loginPanel').classList.add('hidden');$('dashboard').classList.remove('hidden');$('logoutBtn').classList.remove('hidden');loadProducts();loadOrders();}
 $('logoutBtn').onclick=async()=>{await db.auth.signOut();location.reload();};
 async function loadProducts(){const {data,error}=await db.from('products').select('*').order('created_at',{ascending:false});if(error){message('productMessage','خطأ في تحميل المنتجات: '+error.message,true);return;}productCache=data||[];$('productsBody').innerHTML=productCache.map(p=>{const imgs=productImages(p);return `<tr><td>${imgs[0]?`<img class="table-thumb" src="${esc(imgs[0])}" alt=""> `:''}${esc(p.name)}</td><td>${esc(p.type)}</td><td>${money(p.price)}</td><td>${p.active?'ظاهر':'مخفي'}</td><td><button data-edit="${p.id}">تعديل</button> <button class="danger" data-delete="${p.id}">حذف</button></td></tr>`}).join('')||'<tr><td colspan="5">لا توجد منتجات بعد.</td></tr>';}
-$('productsBody').addEventListener('click',async e=>{const edit=e.target.dataset.edit,del=e.target.dataset.delete;if(edit){const p=productCache.find(x=>x.id===edit),f=$('productForm');editingId=p.id;editingImageUrls=productImages(p);for(const k of ['name','type','price','tag','art','description'])f.elements[k].value=p[k]??'';f.elements.active.checked=!!p.active;f.elements.imageFiles.value='';showImagePreview(editingImageUrls);$('formTitle').textContent='تعديل المنتج';$('cancelEdit').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});}if(del&&confirm('هل تريد حذف هذا المنتج؟')){const {error}=await db.from('products').delete().eq('id',del);message('productMessage',error?'تعذر الحذف: '+error.message:'تم حذف المنتج.',!!error);loadProducts();}});
+$('productsBody').addEventListener('click',async e=>{const edit=e.target.dataset.edit,del=e.target.dataset.delete;if(edit){const p=productCache.find(x=>x.id===edit),f=$('productForm');editingId=p.id;editingImageUrls=productImages(p);for(const k of ['name','type','price','tag','art','description'])f.elements[k].value=p[k]??'';f.elements.active.checked=!!p.active;f.elements.imageFiles.value='';showImagePreview([]);$('formTitle').textContent='تعديل المنتج';$('cancelEdit').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});}if(del&&confirm('هل تريد حذف هذا المنتج؟')){const {error}=await db.from('products').delete().eq('id',del);message('productMessage',error?'تعذر الحذف: '+error.message:'تم حذف المنتج.',!!error);loadProducts();}});
 $('productForm').addEventListener('submit',async e=>{
  e.preventDefault();
  const form=e.currentTarget,f=new FormData(form),files=[...(form.elements.imageFiles.files||[])];
  const row={name:f.get('name').trim(),type:f.get('type'),price:Number(f.get('price')),tag:f.get('tag')||'',art:f.get('art')||'📱',description:f.get('description')||'',active:form.elements.active.checked};
  const submit=form.querySelector('[type="submit"]');submit.disabled=true;message('productMessage','جارٍ حفظ المنتج ورفع الصور...');
  try{
-   if(files.length)row.image_urls=await uploadProductImages(files);
+   if(files.length)row.image_urls=[...editingImageUrls,...await uploadProductImages(files)];
    else if(editingId)row.image_urls=editingImageUrls;
    else row.image_urls=[];
    const result=editingId?await db.from('products').update(row).eq('id',editingId):await db.from('products').insert(row);

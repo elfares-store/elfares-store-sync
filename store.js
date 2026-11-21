@@ -23,11 +23,19 @@ function escapeHtml(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','
 function card(p){
  const imgs=Array.isArray(p.image_urls)?p.image_urls.filter(Boolean):(p.image_url?[p.image_url]:[]);
  const main=imgs[0]?`<img src="${escapeHtml(imgs[0])}" alt="${escapeHtml(p.name)}" loading="lazy">`:`<span>${escapeHtml(p.art||'📱')}</span>`;
- const gallery=imgs.length>1?`<div class="product-thumbs">${imgs.slice(0,4).map((u,i)=>`<img src="${escapeHtml(u)}" alt="${escapeHtml(p.name)} - ${i+1}" loading="lazy">`).join('')}</div>`:'';
+ const gallery=imgs.length>1?`<div class="product-thumbs" aria-label="صور المنتج">${imgs.map((u,i)=>`<button class="product-thumb ${i===0?'active':''}" type="button" aria-label="عرض الصورة ${i+1}" onclick="changeProductImage(this)"><img src="${escapeHtml(u)}" alt="${escapeHtml(p.name)} - ${i+1}" loading="lazy"></button>`).join('')}</div>`:'';
  const isPhone=p.type==='phone'||p.type==='used';
  const action=isPhone?`<a class="add" href="https://wa.me/201092915111?text=${encodeURIComponent('أريد الاستفسار عن '+p.name)}" target="_blank" rel="noopener">استفسر عبر واتساب</a>`:`<button class="add" onclick="addToCart('${String(p.id).replace(/'/g,"\\'")}')">أضف للسلة +</button>`;
  return `<article class="product"><div class="product-art ${imgs.length?'has-photo':''}">${main}</div>${gallery}<div class="product-info"><small>${escapeHtml(p.tag||'')}</small><h3>${escapeHtml(p.name)}</h3><p>${escapeHtml(p.description||p.desc||'')}</p><div class="price-row"><span class="price">${money(p.price)}</span>${action}</div></div></article>`;
 }
+window.changeProductImage=function(button){
+ const card=button.closest('.product');
+ const main=card&&card.querySelector('.product-art img');
+ const thumb=button.querySelector('img');
+ if(!main||!thumb)return;
+ main.src=thumb.src;
+ card.querySelectorAll('.product-thumb').forEach(el=>el.classList.toggle('active',el===button));
+};
 function render(){
  const groups={phone:'phoneProducts',used:'usedProducts',accessory:'accessoryProducts'};
  Object.entries(groups).forEach(([type,id])=>{const el=document.getElementById(id);if(el)el.innerHTML=products.filter(p=>p.type===type).map(card).join('')||'<p class="muted">لا توجد منتجات في هذا القسم حالياً.</p>';});
