@@ -45,6 +45,33 @@ if(!ready){$('setupText').textContent='لم يتم إعداد Supabase بعد. �
 else{$('setupPanel').classList.add('hidden');checkSession();}
 async function isAdmin(user){const {data,error}=await db.from('admins').select('user_id').eq('user_id',user.id).maybeSingle();return !error&&!!data;}
 async function checkSession(){const {data}=await db.auth.getSession();if(data.session){if(await isAdmin(data.session.user))showDashboard();else{await db.auth.signOut();message('loginMessage','هذا الحساب ليس لديه صلاحية مدير.',true);}}}
+
+const recoveryRedirect=location.origin+location.pathname;
+$('forgotPasswordBtn')?.addEventListener('click',async()=>{
+ if(!db)return;
+ const email=$('loginForm').elements.email.value.trim();
+ if(!email){message('loginMessage','اكتب البريد الإلكتروني أولاً ثم اضغط نسيت كلمة المرور.',true);return;}
+ message('loginMessage','جارٍ إرسال رابط الاستعادة إلى بريدك...');
+ const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo:recoveryRedirect});
+ if(error){message('loginMessage','تعذر إرسال رابط الاستعادة: '+error.message,true);return;}
+ message('loginMessage','لو البريد مسجل، هيوصلك رابط استعادة. افتح Gmail واضغط الرابط من نفس الجهاز.');
+});
+db?.auth.onAuthStateChange(async(event,session)=>{
+ if(event==='PASSWORD_RECOVERY'&&session){
+  $('loginPanel').classList.add('hidden');$('setupPanel').classList.add('hidden');$('recoveryPanel').classList.remove('hidden');
+ }
+});
+$('recoveryForm')?.addEventListener('submit',async e=>{
+ e.preventDefault();const f=new FormData(e.currentTarget),password=String(f.get('newPassword')||''),confirm=String(f.get('confirmPassword')||'');
+ if(password.length<8){message('recoveryMessage','كلمة المرور لازم تكون 8 أحرف على الأقل.',true);return;}
+ if(password!==confirm){message('recoveryMessage','كلمتا المرور غير متطابقتين.',true);return;}
+ const btn=e.currentTarget.querySelector('button[type="submit"]');btn.disabled=true;message('recoveryMessage','جارٍ تحديث كلمة المرور...');
+ const {error}=await db.auth.updateUser({password});btn.disabled=false;
+ if(error){message('recoveryMessage','تعذر تحديث كلمة المرور: '+error.message,true);return;}
+ message('recoveryMessage','تم تغيير كلمة المرور بنجاح. ارجع لتسجيل الدخول بكلمة المرور الجديدة.');
+ await db.auth.signOut();$('recoveryPanel').classList.add('hidden');$('setupPanel').classList.remove('hidden');$('loginPanel').classList.remove('hidden');
+});
+
 $('loginForm').addEventListener('submit',async e=>{e.preventDefault();if(!db)return;const f=new FormData(e.target);message('loginMessage','جارٍ تسجيل الدخول...');const {data,error}=await db.auth.signInWithPassword({email:f.get('email'),password:f.get('password')});if(error){message('loginMessage','تعذر تسجيل الدخول: '+error.message,true);return;}if(!(await isAdmin(data.user))){await db.auth.signOut();message('loginMessage','تم تسجيل الدخول لكن الحساب غير مضاف كمدير في جدول admins.',true);return;}showDashboard();});
 function showDashboard(){$('loginPanel').classList.add('hidden');$('dashboard').classList.remove('hidden');$('logoutBtn').classList.remove('hidden');loadProducts();loadOrders();}
 $('logoutBtn').onclick=async()=>{await db.auth.signOut();location.reload();};
